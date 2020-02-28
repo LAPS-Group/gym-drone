@@ -13,13 +13,24 @@ def create_grid(shape):
     for row in range(len(grid)):
         for column in range(len(grid[row])):
             grid[row][column] = lattice_path_length((0, 0), (row, column))
-    
+    return grid
+
+def pick_random_point(np_random, shape):
+    rows, columns = shape
+    return (np_random.choice(rows), np_random.choice(columns))
 
 class DroneCardinalDirectionsEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     #grid 
     
-    def __init__(self, rows, columns):
+    def __init__(self, **kwargs):
+        rows = 8
+        columns = 8
+        if 'rows' in kwargs:
+            rows = kwargs.get('rows')
+        if 'columns' in kwargs:
+            columns = kwargs.get('columns')
+        self._shape = (rows, columns)
         self._rows = rows
         self._columns = columns
         
@@ -37,8 +48,13 @@ class DroneCardinalDirectionsEnv(gym.Env):
         #process floats as action_space
         
         self._grid = create_grid((rows, columns))
+        self.reset()
+
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
         
-    def _step(self, action):
+    def step(self, action):
         """
         Parameters
         ----------
@@ -68,12 +84,13 @@ class DroneCardinalDirectionsEnv(gym.Env):
         """
         assert self.action_space.contains(action)
         direction = ACTION_LOOKUP[action]
-        self._drone_pos += direction
+        old_drone_pos = self._drone_pos
+        self._drone_pos = tuple(map(sum,zip(self._drone_pos, direction)))
         drone_x, drone_y = self._drone_pos
         reward = 0
         if drone_x < 0 or drone_y < 0 or drone_x > self._columns or drone_y > self._rows:
             reward -= 1
-            self._drone_pos -= direction
+            self._drone_pos = old_drone_pos
             drone_x, drone_y = self._drone_pos
         reward -= self._grid[drone_x][drone_y]
         
@@ -86,12 +103,13 @@ class DroneCardinalDirectionsEnv(gym.Env):
         
         return ob, reward, episode_over, {}
         
-    def _reset(self):
-        #self._drone_pos = 
-        #self._goal_pos = 
-        pass
+    def reset(self):
+        self._drone_pos = pick_random_point(self.np_random, self._shape)
+        self._goal_pos = self._drone_pos
+        while self._goal_pos == self._drone_pos:
+            self._goal_pos = pick_random_point(self.np_random, self._shape)
         
-    def _render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         pass
 
 ACTION_LOOKUP = {
