@@ -71,8 +71,7 @@ class DroneCardinalDirectionsEnv(gym.Env):
         self._drone_pos += direction
         drone_x, drone_y = self._drone_pos
         reward = 0
-        if drone_x < 0 or drone_y < 0 
-           or drone_x > self._columns or drone_y > self._rows:
+        if drone_x < 0 or drone_y < 0 or drone_x > self._columns or drone_y > self._rows:
             reward -= 1
             self._drone_pos -= direction
             drone_x, drone_y = self._drone_pos
@@ -88,8 +87,8 @@ class DroneCardinalDirectionsEnv(gym.Env):
         return ob, reward, episode_over, {}
         
     def _reset(self):
-        self._drone_pos = 
-        self._goal_pos = 
+        #self._drone_pos = 
+        #self._goal_pos = 
         pass
         
     def _render(self, mode='human', close=False):
