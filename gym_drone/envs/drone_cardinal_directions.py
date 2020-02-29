@@ -119,7 +119,6 @@ class DroneCardinalDirectionsEnv(gym.Env):
         for node_y, node_x in self._path:
             x.append(node_x)
             y.append(node_y)            
-            print("%d %d" % (node_y, node_x))
         plt.plot(x, y, 'k')
         start_row, start_column = self._path[0]
         goal_row, goal_column = self._goal_pos
