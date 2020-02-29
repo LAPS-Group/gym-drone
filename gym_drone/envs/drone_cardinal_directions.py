@@ -2,6 +2,7 @@ import gym
 from gym import spaces
 from gym.utils import seeding 
 import numpy as np
+import matplotlib.pyplot as plt
 
 def lattice_path_length(a, b):
     a_x, a_y = a
@@ -20,8 +21,7 @@ def pick_random_point(np_random, shape):
     return (np_random.choice(rows), np_random.choice(columns))
 
 class DroneCardinalDirectionsEnv(gym.Env):
-    metadata = {'render.modes': ['human']}
-    #grid 
+    metadata = {'render.modes': ['human', 'notebook']}
     
     def __init__(self, **kwargs):
         rows = 8
@@ -86,13 +86,15 @@ class DroneCardinalDirectionsEnv(gym.Env):
         direction = ACTION_LOOKUP[action]
         old_drone_pos = self._drone_pos
         self._drone_pos = tuple(map(sum,zip(self._drone_pos, direction)))
-        drone_x, drone_y = self._drone_pos
+        drone_y, drone_x = self._drone_pos
         reward = 0
-        if drone_x < 0 or drone_y < 0 or drone_x > self._columns or drone_y > self._rows:
+        if drone_x < 0 or drone_y < 0 or drone_x >= self._columns or drone_y >= self._rows:
             reward -= 1
             self._drone_pos = old_drone_pos
-            drone_x, drone_y = self._drone_pos
-        reward -= self._grid[drone_x][drone_y]
+            drone_y, drone_x = self._drone_pos
+        else:
+            self._path.append(self._drone_pos)
+        reward -= self._grid[drone_y][drone_x]
         
         episode_over = False
         if self._drone_pos == self._goal_pos:
@@ -108,9 +110,21 @@ class DroneCardinalDirectionsEnv(gym.Env):
         self._goal_pos = self._drone_pos
         while self._goal_pos == self._drone_pos:
             self._goal_pos = pick_random_point(self.np_random, self._shape)
+        self._path = [self._drone_pos]
         
-    def render(self, mode='human', close=False):
-        pass
+    def render(self, mode='notebook', close=False):
+        plt.imshow(self._grid);
+        plt.axis("off")
+        y, x = ([] for i in range(2))
+        for node_y, node_x in self._path:
+            x.append(node_x)
+            y.append(node_y)            
+            print("%d %d" % (node_y, node_x))
+        plt.plot(x, y, 'k')
+        start_row, start_column = self._path[0]
+        goal_row, goal_column = self._goal_pos
+        plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row], c='r', s=40, zorder=3)
+        plt.show()
 
 ACTION_LOOKUP = {
     0 : (1, 0),
