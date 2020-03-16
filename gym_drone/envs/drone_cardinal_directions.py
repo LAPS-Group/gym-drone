@@ -85,10 +85,11 @@ class DroneCardinalDirectionsEnv(gym.Env):
         assert self.action_space.contains(action)
         direction = ACTION_LOOKUP[action]
         old_drone_pos = self._drone_pos
-        self._drone_pos = tuple(map(sum,zip(self._drone_pos, direction)))
+        self._drone_pos = tuple(map(sum, zip(self._drone_pos, direction)))
         drone_y, drone_x = self._drone_pos
         reward = 0
-        if drone_x < 0 or drone_y < 0 or drone_x >= self._columns or drone_y >= self._rows:
+        if (drone_x < 0 or drone_y < 0 or
+                drone_x >= self._columns or drone_y >= self._rows):
             reward -= 1
             self._drone_pos = old_drone_pos
             drone_y, drone_x = self._drone_pos
@@ -101,9 +102,11 @@ class DroneCardinalDirectionsEnv(gym.Env):
             reward = 0
             episode_over = True
         
-        ob = (self._drone_pos, self._goal_pos)
-        
-        return ob, reward, episode_over, {}
+        return self._get_obs(), reward, episode_over, {}
+
+    def _get_obs(self):
+        return (self._drone_pos[0], self._drone_pos[1],
+                self._goal_pos[0], self._goal_pos[1])
         
     def reset(self):
         self._drone_pos = pick_random_point(self.np_random, self._shape)
@@ -111,23 +114,26 @@ class DroneCardinalDirectionsEnv(gym.Env):
         while self._goal_pos == self._drone_pos:
             self._goal_pos = pick_random_point(self.np_random, self._shape)
         self._path = [self._drone_pos]
+        ob = (self._drone_pos, self._goal_pos)
+        return self._get_obs(), 0, False, {}
         
-    def render(self, mode='notebook', close=False):
-        plt.imshow(self._grid);
+    def render(self, mode='notebook'):
+        plt.imshow(self._grid)
         plt.axis("off")
         y, x = ([] for i in range(2))
         for node_y, node_x in self._path:
             x.append(node_x)
-            y.append(node_y)            
+            y.append(node_y)
         plt.plot(x, y, 'k')
         start_row, start_column = self._path[0]
         goal_row, goal_column = self._goal_pos
-        plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row], c='r', s=40, zorder=3)
+        plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row],
+                    c='r', s=40, zorder=3)
         plt.show()
 
 ACTION_LOOKUP = {
     0 : (1, 0),
     1 : (0, 1),
-    2 : (-1,0),
-    3 : (0,-1)
+    2 : (-1, 0),
+    3 : (0, -1)
 }
