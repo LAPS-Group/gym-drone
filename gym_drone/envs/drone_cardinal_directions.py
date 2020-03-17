@@ -145,8 +145,8 @@ class DroneCardinalDirectionsEnv(gym.Env):
             output[:, :, 0] /= max_value
 
             # Set green pixel at start, blue pixel at goal
-            output[self._drone_pos[0] - 1, self._drone_pos[1] - 1, 1] = 255
-            output[self._goal_pos[0] - 1, self._goal_pos[1] - 1, 2] = 255
+            output[self._drone_pos[0] - 1, self._drone_pos[1] - 1, 1] = 1
+            output[self._goal_pos[0] - 1, self._goal_pos[1] - 1, 2] = 1
 
             return output
         
