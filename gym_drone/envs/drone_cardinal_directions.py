@@ -47,6 +47,8 @@ class DroneCardinalDirectionsEnv(gym.Env):
         #Gym soccer also uses spaces.Box with shape=1 to
         #process floats as action_space
         
+        self._drone_pos = None
+        self._goal_pos = None
         self._grid = create_grid((rows, columns))
         self.reset()
 
@@ -114,22 +116,41 @@ class DroneCardinalDirectionsEnv(gym.Env):
         while self._goal_pos == self._drone_pos:
             self._goal_pos = pick_random_point(self.np_random, self._shape)
         self._path = [self._drone_pos]
-        ob = (self._drone_pos, self._goal_pos)
         return self._get_obs(), 0, False, {}
         
     def render(self, mode='notebook'):
-        plt.imshow(self._grid)
-        plt.axis("off")
-        y, x = ([] for i in range(2))
-        for node_y, node_x in self._path:
-            x.append(node_x)
-            y.append(node_y)
-        plt.plot(x, y, 'k')
-        start_row, start_column = self._path[0]
-        goal_row, goal_column = self._goal_pos
-        plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row],
-                    c='r', s=40, zorder=3)
-        plt.show()
+        if mode == 'notebook':
+            plt.imshow(self._grid)
+            plt.axis("off")
+            y, x = ([] for i in range(2))
+            for node_y, node_x in self._path:
+                x.append(node_x)
+                y.append(node_y)
+
+            plt.plot(x, y, 'k')
+            start_row, start_column = self._path[0]
+            goal_row, goal_column = self._goal_pos
+            plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row],
+                        c='r', s=40, zorder=3)
+            plt.show()
+
+        elif mode == 'rgb_array':
+            output = np.zeros((self._shape[0], self._shape[1], 3))
+
+            # Set red channel to height
+            output[:, :, 0] = self._grid
+
+            # Scale red channel to be approximately 0 to 255
+            max_value = np.amax(self._grid)
+            output[:, :, 0] /= max_value
+
+            # Set green pixel at start, blue pixel at goal
+            output[self._drone_pos[0] - 1, self._drone_pos[1] - 1, 1] = 255
+            output[self._goal_pos[0] - 1, self._goal_pos[1] - 1, 2] = 255
+
+            return output
+        
+        return None
 
 ACTION_LOOKUP = {
     0 : (1, 0),
