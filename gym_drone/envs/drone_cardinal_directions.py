@@ -89,16 +89,26 @@ class DroneCardinalDirectionsEnv(gym.Env):
         old_drone_pos = self._drone_pos
         self._drone_pos = tuple(map(sum, zip(self._drone_pos, direction)))
         drone_y, drone_x = self._drone_pos
+
+        # Check if action brings drone outside grid,
+        # if so cancel movement and punish reward
         reward = 0
         if (drone_x < 0 or drone_y < 0 or
                 drone_x >= self._columns or drone_y >= self._rows):
-            reward -= 1
             self._drone_pos = old_drone_pos
             drone_y, drone_x = self._drone_pos
+            reward -= 1
+        # If the drone is still inside the grid, add
+        # the current node to the list of points to 
+        # be rendered when rendering path.
         else:
             self._path.append(self._drone_pos)
+
+        # Reward is at any point (except goal) the negative
+        # of the height at each point.
         reward -= self._grid[drone_y][drone_x]
-        
+
+        # Check if goal is reached, which ends the episode
         episode_over = False
         if self._drone_pos == self._goal_pos:
             reward = 0
@@ -107,8 +117,8 @@ class DroneCardinalDirectionsEnv(gym.Env):
         return self._get_obs(), reward, episode_over, {}
 
     def _get_obs(self):
-        return (self._drone_pos[0], self._drone_pos[1],
-                self._goal_pos[0], self._goal_pos[1])
+        return np.array([self._drone_pos[0], self._drone_pos[1],
+                self._goal_pos[0], self._goal_pos[1]])
         
     def reset(self):
         self._drone_pos = pick_random_point(self.np_random, self._shape)
@@ -116,7 +126,7 @@ class DroneCardinalDirectionsEnv(gym.Env):
         while self._goal_pos == self._drone_pos:
             self._goal_pos = pick_random_point(self.np_random, self._shape)
         self._path = [self._drone_pos]
-        return self._get_obs(), 0, False, {}
+        return self._get_obs()
         
     def render(self, mode='notebook'):
         if mode == 'notebook':
