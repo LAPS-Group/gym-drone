@@ -45,13 +45,18 @@ class DroneCardinalDirectionsEnv(gym.Env):
     def __init__(self, **kwargs):
         rows = 8
         columns = 8
+        memory_capacity = 10
         if 'rows' in kwargs:
             rows = kwargs.get('rows')
         if 'columns' in kwargs:
             columns = kwargs.get('columns')
+        if 'memory_capacity' in kwargs:
+            memory_capacity = kwargs.get('memory_capacity')
+
         self._shape = (rows, columns)
         self._rows = rows
         self._columns = columns
+        self._memory_capacity = memory_capacity
 
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Tuple((
@@ -145,7 +150,7 @@ class DroneCardinalDirectionsEnv(gym.Env):
         while self._goal_pos == self._drone_pos:
             self._goal_pos = pick_random_point(self.np_random, self._shape)
         # self._path = [self._drone_pos]
-        self._path = Path(5)
+        self._path = Path(self._memory_capacity)
         self._path.push(self._drone_pos)
         return self._get_obs()
 
