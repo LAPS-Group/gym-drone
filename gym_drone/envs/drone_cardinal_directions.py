@@ -159,11 +159,11 @@ class DroneCardinalDirectionsEnv(gym.Env):
                 y.append(node_y)
 
             plt.plot(x, y, 'k')
-            start_row, start_column = self._path.memory[0]
+            start_row, start_column = self._path.memory[len(self._path.memory) - 1]
             goal_row, goal_column = self._goal_pos
-            plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row],
-                        c='r', s=40, zorder=3)
-            plt.show()
+            return plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row],
+                               c='r', s=40, zorder=3)
+            # plt.show()
             #display(plt.show())
 
         elif mode == 'rgb_array':
