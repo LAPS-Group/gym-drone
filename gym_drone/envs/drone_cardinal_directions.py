@@ -45,18 +45,20 @@ class DroneCardinalDirectionsEnv(gym.Env):
     def __init__(self, **kwargs):
         rows = 8
         columns = 8
-        memory_capacity = 10
+        self._memory_capacity = 10
+        self._ax = plt
         if 'rows' in kwargs:
             rows = kwargs.get('rows')
         if 'columns' in kwargs:
             columns = kwargs.get('columns')
         if 'memory_capacity' in kwargs:
-            memory_capacity = kwargs.get('memory_capacity')
+            self._memory_capacity = kwargs.get('memory_capacity')
+        if 'ax' in kwargs:
+            self._ax = kwargs.get('ax')
 
         self._shape = (rows, columns)
         self._rows = rows
         self._columns = columns
-        self._memory_capacity = memory_capacity
 
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Tuple((
@@ -156,20 +158,21 @@ class DroneCardinalDirectionsEnv(gym.Env):
 
     def render(self, mode='notebook'):
         if mode == 'notebook':
-            plt.imshow(self._grid)
-            plt.axis("off")
+            self._ax.cla()
+            self._ax.imshow(self._grid)
+            self._ax.axis("off")
             y, x = ([] for i in range(2))
             for node_y, node_x in self._path.memory:
                 x.append(node_x)
                 y.append(node_y)
 
-            plt.plot(x, y, 'k')
-            start_row, start_column = self._path.memory[len(self._path.memory) - 1]
+            self._ax.plot(x, y, 'k')
+            start_row, start_column = self._path.memory[len(
+                self._path.memory) - 1]
             goal_row, goal_column = self._goal_pos
-            return plt.scatter(x=[start_column, goal_column], y=[start_row, goal_row],
-                               c='r', s=40, zorder=3)
-            # plt.show()
-            #display(plt.show())
+            return self._ax.scatter(x=[start_column, goal_column],
+                                    y=[start_row, goal_row],
+                                    c='r', s=40, zorder=3)
 
         elif mode == 'rgb_array':
             output = np.zeros((self._shape[0], self._shape[1], 3), dtype=np.uint8)
