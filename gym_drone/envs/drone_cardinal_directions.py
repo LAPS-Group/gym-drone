@@ -40,7 +40,7 @@ def pick_random_point(np_random, shape):
 
 
 class DroneCardinalDirectionsEnv(gym.Env):
-    metadata = {'render.modes': ['human', 'notebook']}
+    metadata = {'render.modes': ['human', 'notebook', 'rgb_array']}
 
     def __init__(self, **kwargs):
         rows = 8

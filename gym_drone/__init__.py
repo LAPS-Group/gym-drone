@@ -4,3 +4,8 @@ register(
     id='DroneCardinal-v0',
     entry_point='gym_drone.envs:DroneCardinalDirectionsEnv'
 )
+
+register(
+    id='TurnShort-v0',
+    entry_point='gym_drone.envs:TurnShortEnv'
+)
