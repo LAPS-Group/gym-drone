@@ -28,6 +28,7 @@ class TurnShort:
         current_x = None
         current_y = None
         total = 0
+        points = []
         for step in range(steps):
             current_pos = tuple(map(operator.mul,
                                     unit_vector,
@@ -39,8 +40,9 @@ class TurnShort:
                     or math.floor(current_pos[1]) != current_y:
                 current_x = math.floor(current_pos[0])
                 current_y = math.floor(current_pos[1])
+                points.append((current_x, current_y))
             total += grid[current_x][current_y]
-        return total
+        return total, points
 
     def _circle_sampled_height(start, stop, origo, grid, stepsize=0.1):
         grid_shape = grid.shape
@@ -57,15 +59,14 @@ class TurnShort:
         arclength = rad_total * radius
         steps = int(arclength // stepsize)
 
-        # NOTE: if the angle thing turns into a problem, the angle thing as in
-        # vector_angle only finds the shortest angle, then instead do it like the
-        # other and find the shortest angle, and the angle between them, and add
-        # them together to find the other angle.
+        # NOTE: if the angle thing turns into a problem, look at turn_short and
+        # do the same workaround.
 
         rad_steps = np.linspace(rad_start, rad_stop, num=steps)
         current_x = None
         current_y = None
         total = 0
+        points = []
         for step in rad_steps:
             direction_vector = (math.cos(step), math.sin(step))
             direction_vector = tuple(map(operator.mul,
@@ -77,11 +78,12 @@ class TurnShort:
                     or math.floor(tangent_point[1]) != current_y:
                 current_x = math.floor(tangent_point[0])
                 current_y = math.floor(tangent_point[1])
+                points.append((current_x, current_y))
             if current_x < 0 or current_x >= grid_shape[1] \
                     or current_y < 0 or current_y >= grid_shape[0]:
-                return None
+                return None, []
             total += grid[current_x][current_y]
-        return total
+        return total, points
 
     # a, b, c, where a and c are start and stop points,
     # while b is the center point which determines the
@@ -178,14 +180,18 @@ class TurnShort:
         turn = TurnShort.shortest_turn(a, b, c, turn_rate)
         # a turn is composed of three segments: the line leading up to the turn,
         # the turn itself, and the line after the curve to the final point
-        pre_turn_height = TurnShort._line_sampled_height(a, turn['A'], grid)
-        turn_height = TurnShort._circle_sampled_height(turn['A'],
-                                                       turn['C'],
-                                                       turn['O'],
-                                                       grid)
-        post_turn_height = TurnShort._line_sampled_height(turn['C'], c, grid)
+        pre_turn_height, pre_points = TurnShort._line_sampled_height(a,
+                                                                     turn['A'],
+                                                                     grid)
+        turn_height, turn_points = TurnShort._circle_sampled_height(turn['A'],
+                                                                    turn['C'],
+                                                                    turn['O'],
+                                                                    grid)
+        post_turn_height, post_points = TurnShort._line_sampled_height(
+            turn['C'], c, grid)
+        points = pre_points + turn_points + post_points
         # the turn can theoretically end up outside the space of the grid, in
         # that case it will return None.
-        if turn_height is None:
-            return None
-        return pre_turn_height + turn_height + post_turn_height
+        if turn_height is None or turn_points == []:
+            return None, []
+        return pre_turn_height + turn_height + post_turn_height, points

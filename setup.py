@@ -1,8 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='laps',
-    version='0.1.3',
+    name='laps-python',
+    version='0.1.4',
     install_requires=['gym', 'numpy'],
-    packages=['gym_drone', 'turn_short']
+    packages=find_packages()
 )
