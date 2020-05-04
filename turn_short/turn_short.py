@@ -52,7 +52,11 @@ class TurnShort:
         # origo plus unit vector in x direction, to find absolute angles.
         O_i = tuple(map(operator.add, origo, (1, 0)))
         rad_start = TurnShort._vector_angle(start, origo, O_i)
+        if start[1] < origo[1]:
+            rad_start = 2*math.pi - rad_start
         rad_stop = TurnShort._vector_angle(stop, origo, O_i)
+        if stop[1] < origo[1]:
+            rad_stop = 2*math.pi - rad_stop
 
         # find arclength, and steps needed to travel stepsize on each step.
         rad_total = abs(rad_start - rad_stop)
@@ -129,14 +133,14 @@ class TurnShort:
         B_i = tuple(map(operator.add, b, (1, 0)))
 
         # find the angle to the center of the circle by taking the average of
-        # the angle of the two vectors. _vector_angle finds the shortes angle
+        # the angle of the two vectors. _vector_angle finds the shortest angle
         # between the vectors, so if the angle is >180, it will instead be the
         # equivalent of -angle, so convert it back by doing 2pi - angle.
         BA_angle = TurnShort._vector_angle(B_i, b, a)
-        if BA_angle < b[1]:
+        if a[1] < b[1]:
             BA_angle = 2*math.pi - BA_angle
         BC_angle = TurnShort._vector_angle(B_i, b, c)
-        if BC_angle < b[1]:
+        if c[1] < b[1]:
             BC_angle = 2*math.pi - BC_angle
 
         # since we're adding the relative angle to the absolute angle later on,
