@@ -161,6 +161,7 @@ class TurnShortEnv(gym.Env):
         # less reward the higher the total altitude of the point.
         reward = 100 / total_height
 
+        episode_over = True
         return state, reward, episode_over, {'total_height': total_height,
                                              'points_traversed': points}
 
