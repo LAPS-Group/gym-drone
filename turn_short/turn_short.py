@@ -23,6 +23,8 @@ class TurnShort:
         vector = tuple(map(operator.sub, stop, start))
         vector_magnitude = np.linalg.norm(vector)
         steps = int(vector_magnitude // stepsize)
+        if steps == 0:
+            return 0, []
         unit_vector = tuple(
             map(operator.truediv, vector, [vector_magnitude]*2))
 
@@ -66,6 +68,8 @@ class TurnShort:
         rad_total = abs(rad_start - rad_stop)
         arclength = rad_total * radius
         steps = int(arclength // stepsize)
+        if steps == 0:
+            return 0, []
 
         # check if the angle is too big, meaning the circle arc goes in the
         # wrong direction.
@@ -205,6 +209,6 @@ class TurnShort:
         points = pre_points + turn_points + post_points
         # the turn can theoretically end up outside the space of the grid, in
         # that case it will return None.
-        if turn_height is None or turn_points == []:
+        if turn_height is None:
             return None, []
         return pre_turn_height + turn_height + post_turn_height, points
