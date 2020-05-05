@@ -38,7 +38,7 @@ def pick_random_point(np_random, shape):
 class TurnShortEnv(gym.Env):
 
     metadata = {'render.modes': ['human', 'rgb_array']}
-    
+
     def __init__(self, **kwargs):
         # the number of files to use from the training_data_dir. By default 0,
         # which will load every file in the folder into memory.
@@ -49,7 +49,7 @@ class TurnShortEnv(gym.Env):
         # action space.
         self._subsampling = 40
         # # number of steps in each episode, where each step is a turn
-        # self._steps = 5
+        #self._steps = 2
         # the turn rate of the drone
         self._turn_rate = 4
         # the matplotlib ax to plot on, otherwise will plot to the general
@@ -58,15 +58,15 @@ class TurnShortEnv(gym.Env):
         if 'training_data_dir' in kwargs:
             self._training_data_dir = kwargs.get('training_data_dir')
             if self._training_data_dir[-1] != '/':
-                self._training_data_dir+= '/'
+                self._training_data_dir += '/'
         if 'training_samples' in kwargs:
             self._training_samples = kwargs.get('training_samples')
         if 'shape' in kwargs:
             self._shape = kwargs.get('shape')
         if 'subsampling' in kwargs:
             self._subsampling = kwargs.get('subsampling')
-        # if 'steps' in kwargs:
-            # self._steps = kwargs.get('steps')
+        #if 'steps' in kwargs:
+            #self._steps = kwargs.get('steps')
         if 'turn_rate' in kwargs:
             self._turn_rate = kwargs.get('turn_rate')
         if 'ax' in kwargs:
@@ -89,7 +89,7 @@ class TurnShortEnv(gym.Env):
         self._last_drone_pos = (None, None)
         self._drone_pos = (None, None)
         self._goal_pos = (None, None)
-        # self._step = None
+        #self._step = 0
         self._heightmap = np.zeros(self._shape)
 
         self._training_data = []
@@ -127,14 +127,15 @@ class TurnShortEnv(gym.Env):
 
     def step(self, action):
         assert self.action_space.contains(action)
-        new_position = action_to_position(
-            action, self._shape, self._subsampling)
+        new_position = action_to_position(action,
+                                          self._shape,
+                                          self._subsampling)
 
         state = self._get_obs()
         if not TurnShort.flight_possible(self._drone_pos,
-                                          new_position,
-                                          self._goal_pos,
-                                          self._turn_rate):
+                                         new_position,
+                                         self._goal_pos,
+                                         self._turn_rate):
             return state, 0, True, {}
 
         # get the sampled height of the turn, as well as the list of points
@@ -149,7 +150,7 @@ class TurnShortEnv(gym.Env):
         # reward is zero.
         if total_height is None:
             return state, 0, True, {}
-        
+
         # total height member set, as well as the points traversed list, to
         # make experimenting with different ways to render the problem and
         # reward functions easier.
@@ -159,9 +160,9 @@ class TurnShortEnv(gym.Env):
         # reward such that there's a positive reward for making the turn, but
         # less reward the higher the total altitude of the point.
         reward = 100 / total_height
-        episode_over = True
 
-        return state, reward, episode_over, {'total_height': total_height, 'points_traversed': points}
+        return state, reward, episode_over, {'total_height': total_height,
+                                             'points_traversed': points}
 
     def _get_obs(self):
         return (self._last_drone_pos[0],
@@ -179,10 +180,9 @@ class TurnShortEnv(gym.Env):
                 or lattice_path_length(self._goal_pos, self._drone_pos) < self._shape[0] - 10:
             self._goal_pos = pick_random_point(self.np_random, self._shape)
             self._drone_pos = pick_random_point(self.np_random, self._shape)
-        # self._step = 0
+        #self._step = 0
         # self._path = Path(self._memory_capacity)
         # self._path.push(self._drone_pos)
-        # TODO: again, temporary way of getting training data, remove this
         min_height = 0
         max_height = 0
         while min_height == max_height:
