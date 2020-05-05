@@ -63,8 +63,13 @@ class TurnShort:
         arclength = rad_total * radius
         steps = int(arclength // stepsize)
 
-        # NOTE: if the angle thing turns into a problem, look at turn_short and
-        # do the same workaround.
+        # check if the angle is too big, meaning the circle arc goes in the
+        # wrong direction.
+        if rad_total > math.pi:
+            if rad_stop > rad_start:
+                rad_stop -= 2*math.pi
+            else:
+                rad_start -= 2*math.pi
 
         rad_steps = np.linspace(rad_start, rad_stop, num=steps)
         current_x = None
