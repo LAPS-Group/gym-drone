@@ -19,6 +19,7 @@ class TurnShort:
         return angle
 
     def _line_sampled_height(start, stop, grid, stepsize=0.1):
+        grid_shape = grid.shape
         vector = tuple(map(operator.sub, stop, start))
         vector_magnitude = np.linalg.norm(vector)
         steps = int(vector_magnitude // stepsize)
@@ -41,6 +42,9 @@ class TurnShort:
                 current_x = math.floor(current_pos[0])
                 current_y = math.floor(current_pos[1])
                 points.append((current_x, current_y))
+            if current_x < 0 or current_x >= grid_shape[1] \
+                    or current_y < 0 or current_y >= grid_shape[0]:
+                return None, []
             total += grid[current_x][current_y]
         return total, points
 
