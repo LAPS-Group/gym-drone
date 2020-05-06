@@ -60,34 +60,35 @@ class TurnShort:
         rad_start = TurnShort._vector_angle(start, origo, O_i)
         if start[1] < origo[1]:
             rad_start = 2*math.pi - rad_start
-        #rad_stop = TurnShort._vector_angle(stop, origo, O_i)
-        #if stop[1] < origo[1]:
-            #rad_stop = 2*math.pi - rad_stop
+        rad_stop = TurnShort._vector_angle(stop, origo, O_i)
+        if stop[1] < origo[1]:
+            rad_stop = 2*math.pi - rad_stop
 
         rad_diff = TurnShort._vector_angle(start, origo, stop)
-        rad_stop = rad_start + rad_diff
 
-        diff = abs(rad_start - rad_stop)
-        alternative_rad = 2*math.pi - rad_start
-        if abs(alternative_rad - rad_stop) < diff:
-            rad_start = alternative_rad
+        op = 1
+        if rad_stop < rad_start:
+            op = -1
+        new_rad = rad_start + rad_diff * op
+        if new_rad % 2*math.pi != new_rad:
+            op *= -1
+        rad_stop = rad_start + rad_diff * op
 
         # find arclength, and steps needed to travel stepsize on each step.
-        #rad_total = abs(rad_start - rad_stop)
-        rad_total = rad_diff
-        arclength = rad_total * radius
+        arclength = rad_diff * radius
         steps = int(arclength // stepsize)
+        if steps == 0:
+            return 0, []
 
-        rad_total += math.pi / 2
-        print(rad_total)
-
-        # NOTE: if the angle thing turns into a problem, look at turn_short and
-        # do the same workaround.
-
+        # check if the angle is too big, meaning the circle arc goes in the
+        # wrong direction.
+        #if rad_total > math.pi:
+            #if rad_stop > rad_start:
+                #rad_stop -= 2*math.pi
+            #else:
+                #rad_start -= 2*math.pi
 
         rad_steps = np.linspace(rad_start, rad_stop, num=steps)
-        #print("Rad: ,", rad_start, rad_stop)
-        #print(rad_steps[0], rad_steps[-1])
         current_x = None
         current_y = None
         total = 0
@@ -208,9 +209,9 @@ class TurnShort:
         pre_turn_height, pre_points = TurnShort._line_sampled_height(
             a, turn['A'], grid, stepsize)
         turn_height, turn_points = TurnShort._circle_sampled_height(
-            turn['A'], turn['C'], turn['O'], grid, stepsize)
+            turn['A'], turn['C'], turn['O'], grid)
         post_turn_height, post_points = TurnShort._line_sampled_height(
-            turn['C'], c, grid, stepsize)
+            turn['C'], c, grid)
         points = pre_points + turn_points + post_points
         # the turn can theoretically end up outside the space of the grid, in
         # that case it will return None.
