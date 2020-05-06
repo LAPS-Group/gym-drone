@@ -209,9 +209,9 @@ class TurnShort:
         pre_turn_height, pre_points = TurnShort._line_sampled_height(
             a, turn['A'], grid, stepsize)
         turn_height, turn_points = TurnShort._circle_sampled_height(
-            turn['A'], turn['C'], turn['O'], grid)
+            turn['A'], turn['C'], turn['O'], grid, stepsize)
         post_turn_height, post_points = TurnShort._line_sampled_height(
-            turn['C'], c, grid)
+            turn['C'], c, grid, stepsize)
         points = pre_points + turn_points + post_points
         # the turn can theoretically end up outside the space of the grid, in
         # that case it will return None.
