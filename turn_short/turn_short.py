@@ -60,26 +60,34 @@ class TurnShort:
         rad_start = TurnShort._vector_angle(start, origo, O_i)
         if start[1] < origo[1]:
             rad_start = 2*math.pi - rad_start
-        rad_stop = TurnShort._vector_angle(stop, origo, O_i)
-        if stop[1] < origo[1]:
-            rad_stop = 2*math.pi - rad_stop
+        #rad_stop = TurnShort._vector_angle(stop, origo, O_i)
+        #if stop[1] < origo[1]:
+            #rad_stop = 2*math.pi - rad_stop
+
+        rad_diff = TurnShort._vector_angle(start, origo, stop)
+        rad_stop = rad_start + rad_diff
+
+        diff = abs(rad_start - rad_stop)
+        alternative_rad = 2*math.pi - rad_start
+        if abs(alternative_rad - rad_stop) < diff:
+            rad_start = alternative_rad
 
         # find arclength, and steps needed to travel stepsize on each step.
-        rad_total = abs(rad_start - rad_stop)
+        #rad_total = abs(rad_start - rad_stop)
+        rad_total = rad_diff
         arclength = rad_total * radius
         steps = int(arclength // stepsize)
-        if steps == 0:
-            return 0, []
 
-        # check if the angle is too big, meaning the circle arc goes in the
-        # wrong direction.
-        if rad_total > math.pi:
-            if rad_stop > rad_start:
-                rad_stop -= 2*math.pi
-            else:
-                rad_start -= 2*math.pi
+        rad_total += math.pi / 2
+        print(rad_total)
+
+        # NOTE: if the angle thing turns into a problem, look at turn_short and
+        # do the same workaround.
+
 
         rad_steps = np.linspace(rad_start, rad_stop, num=steps)
+        #print("Rad: ,", rad_start, rad_stop)
+        #print(rad_steps[0], rad_steps[-1])
         current_x = None
         current_y = None
         total = 0
