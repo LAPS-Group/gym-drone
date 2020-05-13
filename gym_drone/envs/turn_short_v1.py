@@ -26,8 +26,11 @@ def get_heightmap(training_data, shape, np_random):
     # return training_data[0:shape[0], 0:shape[1]]
     rows, columns = shape
     data_rows, data_columns = training_data.shape
-    start_position = (np_random.choice(data_rows - rows),
-                      np_random.choice(data_columns - columns))
+    if data_rows - rows == 0 or data_columns - columns == 0:
+        start_position = (0, 0)
+    else:
+        start_position = (np_random.choice(data_rows - rows),
+                          np_random.choice(data_columns - columns))
     return training_data[start_position[0]:start_position[0] + rows,
                          start_position[1]:start_position[1] + columns]
 
@@ -113,14 +116,22 @@ class TurnShortEnvV1(gym.Env):
                 pixels = img.load()
                 width, height = img.size
                 if count == 0:
-                    self._training_data = np.zeros((number, width, height))
+                    self._training_data = np.zeros((number, width, height),
+                                                   dtype=np.uint8)
 
-                grid = np.zeros((height, width))
-                for y in range(height):
-                    for x in range(width):
-                        grid[y][x] = pixels[x, y]
-                # self._training_data.append(grid)
-                self._training_data[count, :, :] = grid
+                # grid = np.zeros((height, width))
+                # for y in range(height):
+                    # for x in range(width):
+                        # grid[y][x] = pixels[x, y]
+                # # self._training_data.append(grid)
+                # self._training_data[count, :, :] = grid
+                    # self._training_data = np.zeros((number, width, height))
+                img_array = np.array(img)
+                if img_array.ndim == 2:
+                    self._training_data[count, :, :] = img_array
+                if img_array.ndim == 3:
+                    # self._training_data[count, :, :] = img_array[:, :, 0] / 255
+                    self._training_data[count, :, :] = img_array[:, :, 0]
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -165,7 +176,8 @@ class TurnShortEnvV1(gym.Env):
             traversible = False
 
         if not traversible:
-            return self._get_obs(), 0, True, {}
+            return self._get_obs(), 0, True, {'total_height': 0,
+                                              'points_traversed': []}
 
         # reward such that there's a positive reward for making the turn, but
         # less reward the higher the total altitude of the point.
