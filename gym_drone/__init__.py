@@ -14,3 +14,8 @@ register(
     id='TurnShort-v1',
     entry_point='gym_drone.envs:TurnShortEnvV1'
 )
+
+register(
+    id='Waypoint-v0',
+    entry_point='gym_drone.envs:WaypointEnv'
+)
